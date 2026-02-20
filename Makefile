@@ -1,7 +1,10 @@
-build:
-	tinygo build -target=pico cmd/usb_button/main.go
+build-fw:
+	tinygo build -target=pico -o ./.bin/usb_button.uf2 ./firmware/cmd/usb_button
+
+build-host:
+	go build -o ./.bin/hid_listener ./host/cmd/hid_listener
 
 flash:
-	tinygo flash -target=pico cmd/usb_button/main.go
+	tinygo flash -target=pico ./firmware/cmd/usb_button
 
-.PHONY: flash
+.PHONY: build build-fw flash
