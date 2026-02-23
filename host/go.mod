@@ -9,4 +9,7 @@ require (
 
 replace github.com/jozefcipa/usb-button/protocol => ../protocol
 
-require golang.org/x/sys v0.30.0 // indirect
+require (
+	github.com/yuin/gopher-lua v1.1.1 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+)

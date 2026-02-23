@@ -1,14 +1,19 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
-	"runtime"
+	"os/signal"
+	"strings"
+	"syscall"
 
 	"github.com/jozefcipa/usb-button/host/internal/cli"
 	"github.com/jozefcipa/usb-button/host/internal/daemon"
 	"github.com/jozefcipa/usb-button/host/internal/hid"
+	"github.com/jozefcipa/usb-button/host/internal/hooks"
+	"github.com/jozefcipa/usb-button/protocol"
 )
 
 // Default VID/PID for Raspberry Pi Pico (TinyGo default)
@@ -32,42 +37,71 @@ func main() {
 		return
 	}
 
+	// Debug command to list the available HID devices
 	if cli.ListHIDDevices {
 		hid.ListDevices()
 		return
 	}
 
+	// Debug command to send hex data directly to the device
 	if cli.SendHexData != "" {
-		if err := hid.SendData(RPI_PICO_VID, RPI_PICO_PID, cli.SendHexData); err != nil {
+		hexStr := strings.TrimSpace(strings.ReplaceAll(cli.SendHexData, " ", ""))
+		data, err := hex.DecodeString(hexStr)
+		if err != nil {
+			log.Fatalf("Failed to decode hex data: %v", err)
+		}
+		if err := hid.SendData(RPI_PICO_VID, RPI_PICO_PID, data); err != nil {
 			log.Fatalf("Failed to send data: %v", err)
 		}
 		return
 	}
 
-	// Connect to the device
-	dev, err := hid.Connect(RPI_PICO_VID, RPI_PICO_PID)
+	// Set up hooks for handling HID events
+	hooks.Configure()
+
+	// Connect to RPi Pico
+	rpiPico, err := hid.Connect(RPI_PICO_VID, RPI_PICO_PID)
 	if err != nil {
-		if runtime.GOOS == "darwin" {
-			printMacOSHIDHelp()
-		}
 		log.Fatalf("Failed to connect to the device: %v", err)
 	}
-	defer dev.Close()
+	defer rpiPico.Close()
 
-	// Listen for events
+	// Send a "ready" report to the firmware
+	if err := hid.SendData(RPI_PICO_VID, RPI_PICO_PID, []byte{
+		// TinyGo doesn't define HIDReportConsumer as bidirectional,
+		// so we use HIDReportIDKeyboard that accepts one byte of data from the host
+		protocol.HIDReportIDKeyboard,
+		protocol.LedOn,
+	}); err != nil {
+		log.Fatalf("Failed to send data: %v", err)
+	}
+
+	// Listen for HID reports
 	fmt.Fprintf(os.Stderr, "Listening for reports (VID=0x%04X PID=0x%04X). Press Ctrl+C to stop.\n", RPI_PICO_VID, RPI_PICO_PID)
-	hid.ListenForEvents(dev)
+	hidReports := hid.ListenForHIDReports(rpiPico)
 
-	// TODO: Act upon events, add some logic here, or Lua scripting for custom logic?
-}
+	// Handle Ctrl+C and process interrupts to quit the program
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-func printMacOSHIDHelp() {
-	fmt.Fprintln(os.Stderr, "")
-	fmt.Fprintln(os.Stderr, "macOS HID open failed. Try in order:")
-	fmt.Fprintln(os.Stderr, "  1. System Settings → Privacy & Security → Input Monitoring")
-	fmt.Fprintln(os.Stderr, "     → Add Terminal (or Cursor / your IDE), enable it, then quit and reopen Terminal.")
-	fmt.Fprintln(os.Stderr, "  2. If it still fails, run with sudo (macOS sometimes requires root for HID):")
-	fmt.Fprintln(os.Stderr, "     sudo ./hid_listener")
-	fmt.Fprintln(os.Stderr, "  3. Unplug the Pico, plug it back in, then run again.")
-	fmt.Fprintln(os.Stderr, "")
+	// Inifite loop to handle events
+	for {
+		select {
+		case <-quit:
+			return
+		case hidReport, ok := <-hidReports:
+			if !ok {
+				fmt.Fprintln(os.Stderr, "Error: HID reports channel closed")
+				os.Exit(1)
+			}
+
+			pressType, err := hid.ValidateHIDReport(hidReport)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error: invalid HID report: %v\n", err)
+				continue
+			}
+
+			hooks.HandleHIDEvent(pressType)
+		}
+	}
 }
