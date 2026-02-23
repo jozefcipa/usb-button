@@ -4,8 +4,7 @@
 local log_file = "/tmp/usb_button.log"
 
 local function write_event(label)
-  -- os_exec(cmd) is provided by the host; returns (output, err)
-  os_exec(string.format("echo '%s' >> %s", label, log_file))
+  os.execute(string.format("echo '%s' >> %s", label, log_file))
 end
 
 function onSinglePress()

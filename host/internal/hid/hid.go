@@ -90,16 +90,10 @@ func usageLabel(usagePage, usage uint16) string {
 
 // SendData opens the device, sends the given hex bytes as one HID output report, then closes.
 // Example: 0201 sends [0x02, 0x01] (report ID 2, payload 0x01).
-func SendData(vid, pid uint16, data []byte) error {
+func SendData(dev *hid.Device, data []byte) error {
 	if len(data) == 0 {
 		log.Fatal("Need at least one byte (report ID)")
 	}
-
-	dev, err := Connect(vid, pid)
-	if err != nil {
-		return err
-	}
-	defer dev.Close()
 
 	n, err := dev.Write(data)
 	if err != nil {

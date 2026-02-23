@@ -40,26 +40,6 @@ For example, to make a short press run a shell command:
 
 ```lua
 function onSinglePress()
-    local out, err = os_exec("notify-send 'Button pressed!'")
-    if err then
-        print("Error running command: " .. err)
-    end
+  os.execute("echo 'short press' >> /tmp/usb_button.log")
 end
 ```
-
-### The `os_exec` Function
-
-In your Lua script, you can use the provided `os_exec(cmd)` function to execute shell commands. It returns two values: the command's output (as a string) and an error (or `nil` if successful):
-
-```lua
-local output, err = os_exec("ls /")
-if err then
-    print("Shell error: " .. err)
-else
-    print("Shell output: " .. output)
-end
-```
-
-This lets you make your button trigger notifications, scripts, or interact with other applications in any way shell commands allow.
-
-

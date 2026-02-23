@@ -43,6 +43,13 @@ func main() {
 		return
 	}
 
+	// Connect to RPi Pico
+	rpiPico, err := hid.Connect(RPI_PICO_VID, RPI_PICO_PID)
+	if err != nil {
+		log.Fatalf("Failed to connect to the device: %v", err)
+	}
+	defer rpiPico.Close()
+
 	// Debug command to send hex data directly to the device
 	if cli.SendHexData != "" {
 		hexStr := strings.TrimSpace(strings.ReplaceAll(cli.SendHexData, " ", ""))
@@ -50,7 +57,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to decode hex data: %v", err)
 		}
-		if err := hid.SendData(RPI_PICO_VID, RPI_PICO_PID, data); err != nil {
+		if err := hid.SendData(rpiPico, data); err != nil {
 			log.Fatalf("Failed to send data: %v", err)
 		}
 		return
@@ -59,21 +66,14 @@ func main() {
 	// Set up hooks for handling HID events
 	hooks.Configure()
 
-	// Connect to RPi Pico
-	rpiPico, err := hid.Connect(RPI_PICO_VID, RPI_PICO_PID)
-	if err != nil {
-		log.Fatalf("Failed to connect to the device: %v", err)
-	}
-	defer rpiPico.Close()
-
 	// Send a "ready" report to the firmware
-	if err := hid.SendData(RPI_PICO_VID, RPI_PICO_PID, []byte{
+	if err := hid.SendData(rpiPico, []byte{
 		// TinyGo doesn't define HIDReportConsumer as bidirectional,
 		// so we use HIDReportIDKeyboard that accepts one byte of data from the host
 		protocol.HIDReportIDKeyboard,
 		protocol.LedOn,
 	}); err != nil {
-		log.Fatalf("Failed to send data: %v", err)
+		log.Fatalf("Failed to send Ready report: %v", err)
 	}
 
 	// Listen for HID reports
