@@ -9,12 +9,18 @@ import (
 	"github.com/jozefcipa/usb-button/protocol"
 )
 
+// https://usb.org/sites/default/files/hut1_7.pdf
+// Usage Pages
 const (
-	usagePageGenericDesktop = 0x01 // Usage Page: Generic Desktop (mouse, keyboard, etc.)
-	usagePageConsumer       = 0x0C // Usage Page: Consumer (media keys, system control)
-	usageMouse              = 0x02 // Generic Desktop: Mouse
-	usageKeyboard           = 0x06 // Generic Desktop: Keyboard
-	usageConsumerCtrl       = 0x01 // Consumer: Consumer Control
+	usagePageGenericDesktop = 0x01 // Generic Desktop (mouse, keyboard, etc.)
+	usagePageConsumer       = 0x0C // Consumer (media keys, system control)
+)
+
+// Usages within Usage Pages
+const (
+	usageMouse        = 0x02 // Generic Desktop -> Mouse
+	usageKeyboard     = 0x06 // Generic Desktop -> Keyboard
+	usageConsumerCtrl = 0x01 // Consumer -> Consumer Control
 )
 
 func Connect(vid, pid uint16) (*hid.Device, error) {
