@@ -17,22 +17,8 @@ The repo is split into **firmware/** (TinyGo, for the Pico) and **host/** (regul
 
 - **[docs/HID_PROTOCOL.md](docs/HID_PROTOCOL.md)** – Explains the HID protocol: enumeration, report descriptor, and what the code does.
 - **[docs/TINYGO_DEFAULTS.md](docs/TINYGO_DEFAULTS.md)** – Explains what part of the the USB HID communication is handled by TinyGo for us
-
-## Layout
-
-- **firmware/** – TinyGo code for the Pico (separate Go module).
-  - `main.go` – Entry point: button/LED/HID init, then loop that polls host reports, LED blink, and button; sends consumer reports on press.
-  - `internal/button` – Button and press-type detection (short / double / long).
-  - `internal/led` – LED state and blink vs host-driven on/off.
-  - `internal/hid` – Sending raw HID report bytes (consumer, keyboard output handling) and receiving host reports.
-- **host/** – Regular Go code for your computer (separate Go module).
-  - `main.go` – Finds the Pico HID device, prints reports, runs Lua hooks, can send output (e.g. LED), supports daemon mode.
-  - `internal/hid` – HID open, read, write.
-  - `internal/hooks` – Lua script loading and handler dispatch (e.g. `hid_listener.example.lua`).
-  - `internal/cli` – CLI flags
-  - `internal/daemon` – daemon start/stop.
-
-- **protocol/** – Shared constants (report IDs, button/led usage values) used by firmware and host.
+- **[host/README.md](host/README.md)** - Describes the host code in more detail
+- **[firmware/README.md](firmware/README.md)** - Describes the firmware code in more detail
 
 ## Troubleshooting
 

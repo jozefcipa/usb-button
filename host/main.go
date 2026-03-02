@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/jozefcipa/usb-button/host/internal/cli"
 	"github.com/jozefcipa/usb-button/host/internal/daemon"
@@ -64,7 +65,7 @@ func main() {
 	}
 
 	// Set up hooks for handling HID events
-	hooks.Configure()
+	hooks.Configure(rpiPico)
 
 	// Send a "ready" report to the firmware
 	if err := hid.SendData(rpiPico, []byte{
@@ -103,5 +104,7 @@ func main() {
 
 			hooks.HandleHIDEvent(pressType)
 		}
+
+		time.Sleep(2 * time.Millisecond) // poll interval
 	}
 }

@@ -17,4 +17,7 @@ end
 
 function onLongPress()
   write_event("long")
+  -- led_on()  -- turn Pico LED on
+  -- led_off() -- turn Pico LED off
+  -- led_blink() -- put Pico LED back in blink mode
 end
