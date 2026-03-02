@@ -23,3 +23,12 @@ TinyGo firmware for a Raspberry Pi Pico. A physical button (short / double / lon
    - If `led.ShouldBlink()` is true, call `led.BlinkLED()` to toggle the LED.
    - Call `button.Poll()`; on completed press, send the corresponding consumer report and `Flush()`.
 3. No goroutines; one non-blocking loop so USB and button are both serviced.
+
+# View logs
+To view the RPi logs, find the USB device (`ls /dev/cu.usb*`) and connect to the console via the `screen` command.
+
+For instance,
+
+```
+screen /dev/cu.usbmodem2101 115200
+```

@@ -25,6 +25,7 @@ func Init() {
 	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	led.Low() // LED off after startup
 	blinkLedOn = false
+	ledState = LedStateOff
 }
 
 func On() {
@@ -45,6 +46,9 @@ func BlinkOn() {
 
 // Check if it's time to toggle the blink LED
 func ShouldBlink() bool {
+	if ledState != LedStateBlink {
+		return false
+	}
 	if time.Since(lastBlinkToggle) >= blinkInterval {
 		blinkLedOn = !blinkLedOn
 		return true
