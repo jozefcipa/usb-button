@@ -1,5 +1,8 @@
 # USB Button (RPi Pico)
 
+![usb-hid](https://github.com/user-attachments/assets/c9b970fd-0b9c-4d87-8522-7a2e662e0449)
+
+
 Firmware for a Raspberry Pi Pico with a physical button: short / double / long press are sent to the host as **raw HID reports** (consumer report ID 3 with a 16-bit event code). An LED on GPIO 15 blinks until the host signals ready, then follows host commands. You can customize the report payload and, with a TinyGo override, VID/PID and report format.
 
 The repo is split into **firmware/** (TinyGo, for the Pico) and **host/** (regular Go, for the listener on your computer).
