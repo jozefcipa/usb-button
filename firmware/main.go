@@ -63,7 +63,7 @@ func handleHostReport(reportID byte, payload []byte) {
 		println("LED blink mode enabled from host")
 		return
 	}
-	if b == 0 {
+	if b == protocol.LedOff {
 		led.Off()
 		println("LED turned off from host")
 	}

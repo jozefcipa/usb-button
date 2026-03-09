@@ -66,7 +66,7 @@ func registerLEDHelpers() {
 	}))
 	luaVM.SetGlobal("led_off", luaVM.NewFunction(func(L *lua.LState) int {
 		if sendLEDCmd != nil {
-			_ = sendLEDCmd(0)
+			_ = sendLEDCmd(protocol.LedOff)
 		}
 		return 0
 	}))
